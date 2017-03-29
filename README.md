@@ -21,6 +21,11 @@ Add `[com.livingsocial/lein-dependency-check "0.1.3"]` to the `:plugins` vector 
 Project-level configuration may be provided under a `:dependency-check` key in your project.clj. Currently supported options are:
  * `:log` log each vulnerability found to stdout
  * `:throw` throw an exception after analysis and reporting if vulnerabilities are found, eg. to fail a build
+ * `:proxy` a map where the following keys are supported:
+   * `:host` hostname of the proxy server
+   * `:port` port the proxy is listening on, as a string
+   * `:username` username used for authentication on the proxy
+   * `:password` password used for authentication on the proxy
 
 ## Usage
 

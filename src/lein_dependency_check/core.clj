@@ -18,6 +18,17 @@
 	   (prn "Reconfiguring log4j")
 	   (PropertyConfigurator/configure (.getPath config-file)))))
 
+(defn- initialize-settings
+  "Initialize the thread-local Settings instance from config"
+  [config]
+  (Settings/initialize)
+  (when (.exists (io/as-file SUPPRESSION_FILE))
+    (Settings/setString Settings$KEYS/SUPPRESSION_FILE SUPPRESSION_FILE))
+  (Settings/setStringIfNotEmpty Settings$KEYS/PROXY_SERVER (get-in config [:proxy :server]))
+  (Settings/setStringIfNotEmpty Settings$KEYS/PROXY_PORT (get-in config [:proxy :port]))
+  (Settings/setStringIfNotEmpty Settings$KEYS/PROXY_USERNAME (get-in config [:proxy :username]))
+  (Settings/setStringIfNotEmpty Settings$KEYS/PROXY_PASSWORD (get-in config [:proxy :password])))
+
 (defn- db-properties
   "Returns the CVE database properties"
   []
@@ -37,9 +48,6 @@
 (defn- scan-files
   "Scans the specified files and returns the engine used to scan"
   [files]
-  (Settings/initialize)
-  (when (.exists (io/as-file SUPPRESSION_FILE))
-    (Settings/setString Settings$KEYS/SUPPRESSION_FILE SUPPRESSION_FILE))
   (let [engine (Engine.)]
     (prn "Scanning" (count files) "file(s)...")
     (doseq [file files]
@@ -100,6 +108,7 @@
   "Scans the JAR files found on the class path and creates a vulnerability report."
   [project-classpath project-name output-format output-directory config]
   (reconfigure-log4j)
+  (initialize-settings config)
   (let [format-key (-> output-format read-string report-format)]
     (-> project-classpath
         target-files
